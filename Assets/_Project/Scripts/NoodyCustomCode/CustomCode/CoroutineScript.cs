@@ -61,7 +61,7 @@ namespace NOOD
         {
             this.StopCoroutine(LoopFunctionCR());
             onCompleteLoop?.Invoke();
-            _coroutineScripts.Remove(this);
+            _coroutineScripts?.Remove(this);
             Destroy(this.gameObject, 0.2f);
         }
         

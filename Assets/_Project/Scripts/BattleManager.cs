@@ -4,103 +4,118 @@ using System.Collections.Generic;
 using NOOD;
 using UnityEngine;
 
-public enum BattleState
+namespace Game
 {
-    Prepare,
-    Start,
-    Battling,
-    Win,
-    Lose
-}
-
-public enum BattleSide
-{
-    Player,
-    Enemy
-}
-
-public class BattleManager : MonoBehaviorInstance<BattleManager>
-{
-    public Action onPlayerTurn;
-    public Action onEnemyTurn;
-
-    private Player _player;
-    private Enemy _enemy;
-    private BattleState _state;
-    private List<IBattler> _playerSideBattler = new List<IBattler>();
-    private List<IBattler> _enemySideBattler = new List<IBattler>();
-
-    void Awake()
+    public enum BattleState
     {
-        _state = BattleState.Prepare;
+        Prepare,
+        Start,
+        Battling,
+        Win,
+        Lose
     }
 
-    void Start()
+    public enum BattleSide
     {
-        GameManager.Instance.onGameStart += () => OnGameStart();
+        Player,
+        Enemy
     }
 
-    public BattleState GetState()
+    public class BattleManager : MonoBehaviorInstance<BattleManager>
     {
-        return _state;
-    }
+        public Action onPlayerTurn;
+        public Action onEnemyTurn;
 
-    private void OnGameStart()
-    {
-        _state = BattleState.Prepare;
-    }
+        private BattleState _state;
+        private List<IBattler> _playerSideBattler = new List<IBattler>();
+        private List<IBattler> _enemySideBattler = new List<IBattler>();
 
-    public void EndTurn(BattleSide battleSide)
-    {
-        switch (battleSide)
+        void Awake()
         {
-            case BattleSide.Player:
-                NoodyCustomCode.StartDelayFunction(() =>
-                {
-                    onEnemyTurn?.Invoke(); 
-                }, 1f);
-                break;
-            case BattleSide.Enemy:
-                NoodyCustomCode.StartDelayFunction(() =>
-                {
-                    onPlayerTurn?.Invoke();
-                }, 1f);
-                break;
+            _state = BattleState.Prepare;
+            _playerSideBattler = new List<IBattler>();
+            _enemySideBattler = new List<IBattler>();
         }
-    }
 
-    public void Prepare(BattleSide battleSide, IBattler battler)
-    {
-        switch (battleSide)
+        void Start()
         {
-            case BattleSide.Player:
-                _playerSideBattler.Add(battler);
-                break;
-            case BattleSide.Enemy:
-                _enemySideBattler.Add(battler);
-                break;
+            GameManager.Instance.onGameStart += () => OnGameStart();
         }
-    }
 
-    public List<IBattler> GetOpponent(BattleSide battleSide)
-    {
-        switch (battleSide)
+        public BattleState GetState()
         {
-            case BattleSide.Player:
-                return _enemySideBattler;
-            case BattleSide.Enemy:
-                return _playerSideBattler;
+            return _state;
         }
-        return null;
-    }
 
-    public void EndBattle(BattleSide loseSide)
-    {
-        if (loseSide == BattleSide.Enemy)
-            _state = BattleState.Win;
-        else
-            _state = BattleState.Lose;
+        private void OnGameStart()
+        {
+            _state = BattleState.Prepare;
+        }
 
-        GameManager.Instance.CheckWin();
+        public void EndTurn(BattleSide battleSide)
+        {
+            switch (battleSide)
+            {
+                case BattleSide.Player:
+                    NoodyCustomCode.StartDelayFunction(() =>
+                    {
+                        onEnemyTurn?.Invoke(); 
+                    }, 1f);
+                    break;
+                case BattleSide.Enemy:
+                    NoodyCustomCode.StartDelayFunction(() =>
+                    {
+                        onPlayerTurn?.Invoke();
+                    }, 1f);
+                    break;
+            }
+        }
+
+        public void Prepare(BattleSide battleSide, IBattler battler)
+        {
+            switch (battleSide)
+            {
+                case BattleSide.Player:
+                    _playerSideBattler.Add(battler);
+                    break;
+                case BattleSide.Enemy:
+                    _enemySideBattler.Add(battler);
+                    break;
+            }
+        }
+        public void Remove(BattleSide battleSide, IBattler battler)
+        {
+            switch (battleSide)
+            {
+                case BattleSide.Player:
+                    _playerSideBattler.Remove(battler);
+                    break;
+                case BattleSide.Enemy:
+                    _enemySideBattler.Remove(battler);
+                    break;
+            }
+        }
+
+        public List<IBattler> GetOpponent(BattleSide battleSide)
+        {
+            switch (battleSide)
+            {
+                case BattleSide.Player:
+                    return _enemySideBattler;
+                case BattleSide.Enemy:
+                    return _playerSideBattler;
+            }
+            return null;
+        }
+
+        public void EndBattle(BattleSide loseSide)
+        {
+            if (loseSide == BattleSide.Enemy)
+                _state = BattleState.Win;
+            else
+                _state = BattleState.Lose;
+
+            GameManager.Instance.CheckWin();
+        }
     }
 }

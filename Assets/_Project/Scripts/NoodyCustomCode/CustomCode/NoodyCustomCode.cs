@@ -650,6 +650,24 @@ namespace NOOD
                 return false;
             },"", pauseTimePerLoop, -1);
         }
+        public static void FadeOutTextMeshColor(TextMeshPro textMeshPro, float endValue, float duration)
+        {
+            GameObject fadeOutObj = new GameObject("FadeOutObj");
+            CoroutineScript coroutineScript = fadeOutObj.AddComponent<CoroutineScript>();
+
+            coroutineScript.StartCoroutineLoop(() =>
+            {
+                Color color = textMeshPro.color;
+                color.a -= Time.deltaTime / duration;
+                textMeshPro.color = color;
+                if(textMeshPro.color.a <= endValue)
+                {
+                    textMeshPro.gameObject.SetActive(false);
+                    return true;
+                }
+                return false;
+            }, "", 0, -1);
+        }
         #endregion
     
         #region CoroutineFunction
@@ -807,6 +825,28 @@ namespace NOOD
             float randY = UnityEngine.Random.Range(minPosition.y, maxPosition.y);
 
             return new Vector2(randX, randY);
+        }
+        #endregion
+
+        #region Hex and String
+        public static bool CompareHexStrings(string hex1, string hex2)
+        {
+            // Remove the "0x" prefix if it exists
+            hex1 = hex1.StartsWith("0x") ? hex1.Substring(2) : hex1;
+            hex2 = hex2.StartsWith("0x") ? hex2.Substring(2) : hex2;
+
+            // Pad the shorter string with leading zeros
+            if (hex1.Length < hex2.Length)
+            {
+                hex1 = hex1.PadLeft(hex2.Length, '0');
+            }
+            else if (hex2.Length < hex1.Length)
+            {
+                hex2 = hex2.PadLeft(hex1.Length, '0');
+            }
+
+            // Compare the strings
+            return hex1.Equals(hex2, System.StringComparison.OrdinalIgnoreCase);
         }
         #endregion
     }

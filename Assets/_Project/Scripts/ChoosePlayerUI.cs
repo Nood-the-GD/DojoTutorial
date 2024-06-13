@@ -1,26 +1,37 @@
 using System.Collections;
 using System.Collections.Generic;
+using NOOD;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChoosePlayerUI : MonoBehaviour
+namespace Game
 {
-    [SerializeField] private Button _knightBtn;
-    [SerializeField] private Button _wizardBtn;
-
-    void Awake()
+    public class ChoosePlayerUI : MonoBehaviour
     {
-        _knightBtn.onClick.AddListener(() =>
+        [SerializeField] private Button _knightBtn;
+        [SerializeField] private Button _wizardBtn;
+
+        void Awake()
         {
-            UIManager.Instance.ChoosePlayer(PlayerType.Knight);
-            GameManager.Instance.PlayGame();
-            this.gameObject.SetActive(false);
-        });
-        _wizardBtn.onClick.AddListener(() =>
-        {
-            UIManager.Instance.ChoosePlayer(PlayerType.Wizard);
-            GameManager.Instance.PlayGame();
-            this.gameObject.SetActive(false);
-        });
+            _knightBtn.onClick.AddListener(() =>
+            {
+                UIManager.Instance.ChoosePlayer(PlayerType.Knight);
+                this.gameObject.SetActive(false);
+                NoodyCustomCode.StartDelayFunction(() =>
+                {
+                    GameManager.Instance.PlayGame();
+                }, 1f);
+            });
+            _wizardBtn.onClick.AddListener(() =>
+            {
+                UIManager.Instance.ChoosePlayer(PlayerType.Wizard);
+                this.gameObject.SetActive(false);
+                NoodyCustomCode.StartDelayFunction(() =>
+                {
+                    GameManager.Instance.PlayGame();
+                },1f);
+            });
+        }
     }
+
 }

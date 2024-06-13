@@ -481,8 +481,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2a9a37855b0549bc9ff23c5bf3c51c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxHealth: 100
   _healthSlider: {fileID: 8730288657659470685}
+  _health: {fileID: 0}
 --- !u!114 &2382992339244357057
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -496,6 +496,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _damage: 10
+  hexCode: 
 --- !u!1 &7087049454815086010
 GameObject:
   m_ObjectHideFlags: 0

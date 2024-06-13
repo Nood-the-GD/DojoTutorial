@@ -7,70 +7,74 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviorInstance<UIManager>
+namespace Game
 {
-    public Action onPlayerSkill;
-    public Action onPlayerAttack;
-    public Action onPlayerHeal;
-
-    [SerializeField] Button _attackBtn, _skillBtn, _healBtn;
-    [SerializeField] private GameObject _endGamePanel;
-    [SerializeField] private TextMeshProUGUI _endGameText;
-
-    void Start()
+    public class UIManager : MonoBehaviorInstance<UIManager>
     {
-        GameManager.Instance.onGameStart += () => OnGameStart();
-        BattleManager.Instance.onPlayerTurn += () => 
-        { 
-            if(GameManager.Instance.IsPlaying())
-                ShowButtons();
-        };
-        GameManager.Instance.onEndGame += (isWin) => OnEndGame(isWin);
+        public Action onPlayerSkill;
+        public Action onPlayerAttack;
+        public Action onPlayerHeal;
 
-        _attackBtn.onClick.AddListener(() => 
-        { 
-            onPlayerAttack?.Invoke();
-            HideButton();
-        });
-        _skillBtn.onClick.AddListener(() =>
+        [SerializeField] Button _attackBtn, _skillBtn, _healBtn;
+        [SerializeField] private GameObject _endGamePanel;
+        [SerializeField] private TextMeshProUGUI _endGameText;
+
+        void Start()
         {
-            onPlayerSkill?.Invoke();
-            HideButton();
-        });
-        _healBtn.onClick.AddListener(() =>
+            GameManager.Instance.onGameStart += () => OnGameStart();
+            BattleManager.Instance.onPlayerTurn += () => 
+            { 
+                if(GameManager.Instance.IsPlaying())
+                    ShowButtons();
+            };
+            GameManager.Instance.onEndGame += (isWin) => OnEndGame(isWin);
+
+            _attackBtn.onClick.AddListener(() => 
+            { 
+                onPlayerAttack?.Invoke();
+                HideButton();
+            });
+            _skillBtn.onClick.AddListener(() =>
+            {
+                onPlayerSkill?.Invoke();
+                HideButton();
+            });
+            _healBtn.onClick.AddListener(() =>
+            {
+                onPlayerHeal?.Invoke();
+                HideButton();
+            });
+        }
+
+        private void OnEndGame(bool isWin)
         {
-            onPlayerHeal?.Invoke();
-            HideButton();
-        });
+            _endGamePanel.gameObject.SetActive(true);
+            _endGameText.text = isWin ? "YOU WIN" : "YOU LOSE";
+            _endGameText.color = isWin ? NoodyCustomCode.HexToColor("#FEFF00") : Color.red;
+        }
+
+        private void OnGameStart()
+        {
+            ShowButtons();
+        }
+
+        public void ChoosePlayer(PlayerType playerType)
+        {
+            PlayerSpawner.Instance.SpawnPlayer(playerType);
+        }
+
+        private void ShowButtons()
+        {
+            _attackBtn.gameObject.SetActive(true);
+            _skillBtn.gameObject.SetActive(true);
+            _healBtn.gameObject.SetActive(true);
+        }
+        private void HideButton()
+        {
+            _attackBtn.gameObject.SetActive(false);
+            _skillBtn.gameObject.SetActive(false);
+            _healBtn.gameObject.SetActive(false);
+        }
     }
 
-    private void OnEndGame(bool isWin)
-    {
-        _endGamePanel.gameObject.SetActive(true);
-        _endGameText.text = isWin ? "YOU WIN" : "YOU LOSE";
-        _endGameText.color = isWin ? NoodyCustomCode.HexToColor("#FEFF00") : Color.red;
-    }
-
-    private void OnGameStart()
-    {
-        ShowButtons();
-    }
-
-    public void ChoosePlayer(PlayerType playerType)
-    {
-        PlayerSpawner.Instance.SpawnPlayer(playerType);
-    }
-
-    private void ShowButtons()
-    {
-        _attackBtn.gameObject.SetActive(true);
-        _skillBtn.gameObject.SetActive(true);
-        _healBtn.gameObject.SetActive(true);
-    }
-    private void HideButton()
-    {
-        _attackBtn.gameObject.SetActive(false);
-        _skillBtn.gameObject.SetActive(false);
-        _healBtn.gameObject.SetActive(false);
-    }
 }
