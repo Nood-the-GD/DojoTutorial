@@ -32,6 +32,7 @@ namespace Game
             UIManager.Instance.onPlayerHeal += Heal;
         }
 
+
         void OnDestroy()
         {
             if(_healthSystem)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Codice.Client.BaseCommands.TubeClient;
 using NOOD;
 using TMPro;
 using UnityEngine;
@@ -18,6 +19,7 @@ namespace Game
         [SerializeField] Button _attackBtn, _skillBtn, _healBtn;
         [SerializeField] private GameObject _endGamePanel;
         [SerializeField] private TextMeshProUGUI _endGameText;
+        private bool _isShowBtn;
 
         void Start()
         {
@@ -45,6 +47,22 @@ namespace Game
                 HideButton();
             });
         }
+        void Update()
+        {
+            if (_isShowBtn == false) return;
+            if(Input.GetKeyDown(KeyCode.A))
+            {
+                onPlayerAttack?.Invoke();
+            }
+            if(Input.GetKeyDown(KeyCode.S))
+            {
+                onPlayerSkill?.Invoke();
+            }
+            if(Input.GetKeyDown(KeyCode.D))
+            {
+                onPlayerHeal?.Invoke();
+            }
+        }
 
         private void OnEndGame(bool isWin)
         {
@@ -65,12 +83,14 @@ namespace Game
 
         private void ShowButtons()
         {
+            _isShowBtn = true;
             _attackBtn.gameObject.SetActive(true);
             _skillBtn.gameObject.SetActive(true);
             _healBtn.gameObject.SetActive(true);
         }
         private void HideButton()
         {
+            _isShowBtn = false;
             _attackBtn.gameObject.SetActive(false);
             _skillBtn.gameObject.SetActive(false);
             _healBtn.gameObject.SetActive(false);
