@@ -65,7 +65,6 @@ namespace Game
             }
 
             // Attack logic
-            // GameManager.Instance.MonsterAttack(new SkillType.Attack());
             BattleManager.Instance.GetOpponent(BattleSide.Enemy)[0].Damage();
         }
 

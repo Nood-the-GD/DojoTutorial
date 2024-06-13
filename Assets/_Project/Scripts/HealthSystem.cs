@@ -13,8 +13,8 @@ namespace Game
         public Action onDamage;
 
         [SerializeField] private Slider _healthSlider;
-        [SerializeField] private Health _health;
-        private IBlockChainObject _blockchainObject;
+        private IBlockChainObject _blockchainObject; // This is interface for both player and enemy
+        private Health _healthComponent;
         private float _maxHealth = 100f;
         private float _currentHealth;
 
@@ -25,42 +25,40 @@ namespace Game
         IEnumerator Start()
         {
             yield return new WaitForSeconds(0.2f);
-            _health = EntityManager.Instance.GetModel<Health>(_blockchainObject.hexCode, _blockchainObject.gameId);
-            _health.OnUpdated.RemoveAllListeners();
-            _health.OnUpdated.AddListener(() => UpdateData());
+            _healthComponent = EntityManager.Instance.GetEntity<Health>(_blockchainObject.hexCode, _blockchainObject.gameId);
+            _healthComponent.OnUpdated.RemoveAllListeners(); // Just in case it has some old listeners
+            _healthComponent.OnUpdated.AddListener(() => UpdateData());
             if(_blockchainObject is Enemy)
             {
-                _health.OnUpdated.AddListener(() => UpdateHealth());
+                _healthComponent.OnUpdated.AddListener(() => UpdateHealth());
             }
             _healthSlider.maxValue = _maxHealth;
-            _currentHealth = _maxHealth;
+            _currentHealth = _healthComponent.health;
             _healthSlider.value = _currentHealth;
         }
+
         void OnDisable()
         {
-            if(_health)
-                _health.OnUpdated.RemoveAllListeners();
         }
 
+        // Update heal on visual (slider and text)
         public void UpdateHealth()
         {
-            if(_currentHealth < _health.health)
+            _healthSlider.value = _healthComponent.health;
+            if(_currentHealth < _healthComponent.health) // Heal
             {
-                // Heal
-                NumberTextManager.Instance.SpawnText((_health.health - _currentHealth).ToString("0"), Color.green, this.transform.position);
-                onDamage?.Invoke();
+                NumberTextManager.Instance.SpawnText((_healthComponent.health - _currentHealth).ToString("0"), Color.green, this.transform.position); 
             }
-            if(_currentHealth > _health.health)
+            if(_currentHealth > _healthComponent.health) // Lose heal
             {
-                // Damage
-                NumberTextManager.Instance.SpawnText((_currentHealth - _health.health).ToString("0"), Color.red, this.transform.position);
+                NumberTextManager.Instance.SpawnText((_currentHealth - _healthComponent.health).ToString("0"), Color.red, this.transform.position); 
             }
-            _healthSlider.value = _health.health;
-            _currentHealth = _health.health;
+            _currentHealth = _healthComponent.health;
         }
+        // Update heal data and check if it dead
         private void UpdateData()
         {
-            if(_health.health <= 0)
+            if(_healthComponent.health <= 0)
             {
                 onOutOfHealth?.Invoke();
                 UpdateHealth();

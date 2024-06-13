@@ -1,35 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dojo;
-using Dojo.Starknet;
 using UnityEngine;
 using NOOD;
 using System.Collections;
-using dojo_bindings;
 using System.Threading.Tasks;
+using Dojo;
+using Dojo.Starknet;
 
 namespace Game
 {
     public class GameManager : MonoBehaviorInstance<GameManager>
     {
+        public Action<bool> onEndGame;
+
+        // Add some field to interact with dojo world
         [SerializeField] private WorldManager _worldManager;
         [SerializeField] private WorldManagerData _worldManagerData;
         [SerializeField] private GameManagerData _gameManagerData;
+
         public Actions actions;
-        public Account masterAccount;
-
-        private Dictionary<FieldElement, string> _spawnedAccounts = new Dictionary<FieldElement, string>();
-
-        public BurnerManager burnerManager;
         public JsonRpcClient provider;
-
-        public Action<bool> onEndGame;
+        public Account masterAccount;
 
         public Action onGameStart;
 
         private bool _isPlaying;
         private uint _gameId;
+        private Dictionary<FieldElement, string> _spawnedAccount = new();
         private List<GameObject> _spawnedObject = new List<GameObject>();
 
         void Awake()
@@ -41,17 +39,13 @@ namespace Game
         {
             provider = new JsonRpcClient(_worldManagerData.rpcUrl);
             masterAccount = new Account(provider, new SigningKey(_gameManagerData.privateKey), new FieldElement(_gameManagerData.accountAddress));
-            burnerManager = new BurnerManager(provider, masterAccount);
 
-            _worldManager.synchronizationMaster.OnEntitySpawned.AddListener(InitEntity);
-            foreach (var entity in _worldManager.Entities())
+            _worldManager.synchronizationMaster.OnEntitySpawned.AddListener(InnitEntity);
+            foreach(var entity in _worldManager.Entities())
             {
-                InitEntity(entity);
+                InnitEntity(entity);
             }
-
             yield return new WaitForSeconds(1f);
-            // GetGameID();
-            // SpawnPlayerAndMonster();
             _isPlaying = true;
         }
 
@@ -70,35 +64,9 @@ namespace Game
         }
 
         #region Actions
-        public async Task PlayerAction(SkillType skillType, Action onComplete)
+        public async void PlayerAction(SkillType skillType)
         {
-            try
-            {
-                await actions.action(masterAccount, skillType);
-                onComplete?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError(ex.Message);
-            }
-            
-        }
-        public void MonsterAttack(SkillType skillType)
-        {
-
-        }
-        public async Task SpawnAsync(PlayerType playerType)
-        {
-            if(playerType == PlayerType.Knight)
-            {
-                FieldElement txtHash = await GameManager.Instance.actions.spawn(GameManager.Instance.masterAccount, new Character.Horseman());
-            }
-            else
-            {
-                FieldElement txtHash = await GameManager.Instance.actions.spawn(GameManager.Instance.masterAccount, new Character.Magician());
-            }
-
-
+            await actions.action(masterAccount, skillType);
         }
         #endregion
 
@@ -113,58 +81,55 @@ namespace Game
             return _isPlaying;
         }
 
-        public void InitEntity(GameObject entity)
-        {
-            Debug.Log("SpawnAccount: " + entity.name);
-            foreach (var accountPair in _spawnedAccounts)
-            {
-                Debug.Log("Account: " + accountPair);
-                if (accountPair.Value == null)
-                {
-                    _spawnedAccounts[accountPair.Key] = entity.name;
-                    break;
-                }
-            }
-
-            GetGameID();
-            SpawnPlayerAndMonster();
-        }
-
+        // This is our game logic, you don't need to do this if your game is different
         private void GetGameID()
         {
-            Debug.Log("------------------------");
-            Debug.Log("Get Game Id");
             foreach(var entity in _worldManager.Entities())
             {
-                if(entity.TryGetComponent<Counter>(out Counter counter))
+                if (entity.TryGetComponent<Counter>(out Counter counter)) 
                 {
                     _gameId = counter.counter;
                 }
-            }
+            }    
         }
 
-        private void SpawnPlayerAndMonster()
+        private void SpawnPlayerAndEnemy()
         {
-            Debug.Log("------------------------");
-            Debug.Log("Spawn Player and Enemy");
             foreach(var g in _spawnedObject)
             {
                 Destroy(g);
             }
             _spawnedObject.Clear();
-            
+
             foreach(var entity in _worldManager.Entities())
             {
                 if(entity.TryGetComponent<Health>(out Health health))
                 {
                     if(NoodyCustomCode.CompareHexStrings(health.entityId.Hex(), "0x676f626c696e") && health.gameId == _gameId)
                     {
+                        // Only spawn 1 enemy with the suitable gameId
                         _spawnedObject.Add(EnemySpawner.Instance.SpawnEnemy(_gameId));
-                    }
+                    }    
                 }
                 if(entity.TryGetComponent<Player>(out Player player))
                 {
-                    _spawnedObject.Add(PlayerSpawner.Instance.Spawn(player.character, player.player.Hex(), _gameId));
+                    // Only spawn 1 player and give it hexCode and gameId
+                    _spawnedObject.Add(PlayerSpawner.Instance.SpawnPlayerLocal(player.character, player.player.Hex(), _gameId));
+                }
+            }
+        }
+
+        private void InnitEntity(GameObject entity)
+        {
+            GetGameID();
+            SpawnPlayerAndEnemy();
+            
+            foreach (var account in _spawnedAccount)
+            {
+                if(account.Value == null)
+                {
+                    _spawnedAccount[account.Key] = entity.name;
+                    break;
                 }
             }
         }

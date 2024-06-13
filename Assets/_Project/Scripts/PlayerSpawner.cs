@@ -18,35 +18,36 @@ namespace Game
         [SerializeField] private PlayerMain _wizard;
         [SerializeField] private Transform _playerSpawnPoint;
 
+        // Spawn player using contract
         public async void SpawnPlayer(PlayerType playerType)
         {
-            if(playerType == PlayerType.Knight)
+            switch (playerType)
             {
-                await GameManager.Instance.actions.spawn(GameManager.Instance.masterAccount, new Character.Horseman());
-            }
-            else
-            {
-                await GameManager.Instance.actions.spawn(GameManager.Instance.masterAccount, new Character.Magician());
+                case PlayerType.Knight:
+                    await GameManager.Instance.actions.spawn(GameManager.Instance.masterAccount, new Character.Horseman());
+                    break;
+                case PlayerType.Wizard:
+                    await GameManager.Instance.actions.spawn(GameManager.Instance.masterAccount, new Character.Magician());
+                    break;
             }
         }
-
-        public GameObject Spawn(Character character, string hexCode, uint gameId)
+        
+        // Spawn player in local with prefab base on the return data after running actions.spawn command
+        public GameObject SpawnPlayerLocal(Character character, string hexCode, uint gameId)
         {
             PlayerMain player;
             if(character.GetType() == typeof(Character.Horseman))
             {
-                player = Instantiate(_knight);
+                player = Instantiate(_knight, null);
             }
             else
             {
-                player = Instantiate(_wizard);
+                player = Instantiate(_wizard, null);
             }
-            player.gameObject.SetActive(true);
-            player.transform.position = _playerSpawnPoint.transform.position;
+            player.transform.position = _playerSpawnPoint.position;
             player.hexCode = hexCode;
             player.gameId = gameId;
             return player.gameObject;
         }
     }
-
 }

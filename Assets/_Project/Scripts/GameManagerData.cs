@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Game
 {
+    // You will need to write this by your self
     [CreateAssetMenu(fileName = "GameManagerData", menuName = "ScriptableObject/GameManagerData")]
     public class GameManagerData : ScriptableObject
     {

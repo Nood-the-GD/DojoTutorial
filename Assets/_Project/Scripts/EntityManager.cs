@@ -7,27 +7,27 @@ using UnityEngine;
 
 namespace Game
 {
+    // This class use to find entity base on hexCode and gameId
     public class EntityManager : MonoBehaviorInstance<EntityManager>
     {
         [SerializeField] private WorldManager _worldManager;
-
-        public T GetModel<T>(string hexCode, uint gameId) where T : ModelInstance
+        
+        public T GetEntity<T>(string hexCode, uint gameId) where T : ModelInstance
         {
-            GameObject[] gameObjects = _worldManager.Entities();            
-            foreach(GameObject g in gameObjects)
+            foreach(var entity in _worldManager.Entities())
             {
-                if(g.TryGetComponent<T>(out T model))
+                if(entity.TryGetComponent<T>(out T component))
                 {
-                    FieldElement entityId =(FieldElement) model.Model.Members["entityId"].value;
-                    uint _gameId = (uint)model.Model.Members["gameId"].value;
+                    FieldElement entityId = (FieldElement)component.Model.Members["entityId"].value;
+                    uint _gameId = (uint)component.Model.Members["gameId"].value;
                     if(NoodyCustomCode.CompareHexStrings(hexCode, entityId.Hex()) && _gameId == gameId)
                     {
-                        return (T)model;
+                        return (T)component;
                     }
                 }
             }
-            Debug.LogWarning("can't find model " + typeof(T).Name);
+            Debug.LogError("can't find component: " + typeof(T).Name);
             return null;
-        }
+        }    
     }
 }

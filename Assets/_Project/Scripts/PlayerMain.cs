@@ -56,7 +56,7 @@ namespace Game
             }, 1f);
         }
 
-        private async void Heal()
+        private void Heal()
         {
             // Animation
             if(_animator)
@@ -66,7 +66,7 @@ namespace Game
             }
 
             // Logic
-            await GameManager.Instance.PlayerAction(new SkillType.Healing(), null);
+            GameManager.Instance.PlayerAction(new SkillType.Heal());
             _healthSystem.UpdateHealth();
 
             // EndTurn
@@ -86,7 +86,7 @@ namespace Game
             _healthSystem.UpdateHealth();
         }
 
-        public async void Attack()
+        public void Attack()
         {
             // Attack animation
             if(_animator)
@@ -96,14 +96,14 @@ namespace Game
             }
 
             // Attack logic
-            IBattler target = BattleManager.Instance.GetOpponent(BattleSide.Player)[0];
-            await GameManager.Instance.PlayerAction(new SkillType.Attack(), null);
+            // IBattler target = BattleManager.Instance.GetOpponent(BattleSide.Player)[0];
+            GameManager.Instance.PlayerAction(new SkillType.Attack());
 
             // EndTurn
             BattleManager.Instance.EndTurn(BattleSide.Player);
         }
 
-        public async void Skill()
+        public void Skill()
         {
             // Animation
             if(_animator)
@@ -113,8 +113,8 @@ namespace Game
             }
 
             // Logic
-            IBattler target = BattleManager.Instance.GetOpponent(BattleSide.Player)[0];
-            await GameManager.Instance.PlayerAction(new SkillType.StrongAttack(), null);
+            // IBattler target = BattleManager.Instance.GetOpponent(BattleSide.Player)[0];
+            GameManager.Instance.PlayerAction(new SkillType.StrongAttack());
 
             // EndTurn
             BattleManager.Instance.EndTurn(BattleSide.Player);
